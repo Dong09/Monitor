@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import cv2
 
 
@@ -19,6 +18,3 @@ def init_camera():
 
 
 init_camera()
-=======
-print('cc')
->>>>>>> 809832607626e516cf5426da0ac256eb5dec4e5c
