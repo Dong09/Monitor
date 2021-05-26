@@ -143,8 +143,8 @@ def get_args():
                         default= './weights\\yolov4.weights',
                         help='--todo--', dest='weightfile')
     parser.add_argument('-imgfile', type=str,
-                        default= './data\\giraffe.jpg',
-                        help= './data\\giraffe.jpg', dest='imgfile')
+                        default= './data\\WIN_20210525_09_49_39_Pro.mp4',
+                        help= './data\\WIN_20210525_09_49_39_Pro.mp4', dest='imgfile')
     args = parser.parse_args()
 
     return args
