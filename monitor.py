@@ -1,8 +1,11 @@
+from os import name
 import cv2
 from tool.utils import *
 from tool.torch_utils import *
 from tool.darknet2pytorch import Darknet
+import tool.folder_operation as folder 
 import argparse
+import numpy as np
 import datetime
 
 """hyper parameters"""
@@ -43,8 +46,11 @@ def cut_person(img, boxes, savename=None):
         target = img[y1:y2,x1:x2]
         # img = cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 1)
         if savename is None:
-            print("save plot results to %s" % str(datetime.datetime.now().microsecond)+'.jpg')
-            cv2.imwrite('./data/split/'+str(datetime.datetime.now().microsecond)+'.jpg', target)
+            _name = str(datetime.datetime.now().microsecond)
+            print("save plot results to %s" % _name +'.jpg')
+            cv2.imwrite('./data/split/'+ _name +'.jpg', target)
+            folder.create_folder('./data/split/')
+
 
 
 
@@ -74,9 +80,9 @@ def detect_cv2(cfgfile, weightfile, imgfile):
     sized = cv2.cvtColor(sized, cv2.COLOR_BGR2RGB)
 
     for i in range(2):
-        start = time.time()
+        start = datetime.time()
         boxes = do_detect(m, sized, 0.4, 0.6, use_cuda)
-        finish = time.time()
+        finish = datetime.time()
 
     cut_person(imgfile, boxes[0])
     return plot_boxes_cv2(imgfile, boxes[0], class_names=class_names),boxes[0]
@@ -101,6 +107,9 @@ def get_args():
 
 
 def target_detect():
+    '''
+    针对目标每一帧截取图片
+    '''
     cap = cv2.VideoCapture('./data/WIN_20210525_09_49_39_Pro.mp4')
 
     video_width = int(cap.get(3))

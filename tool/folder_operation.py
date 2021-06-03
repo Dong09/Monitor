@@ -2,6 +2,9 @@ import os
 import re
 
 def create_folder(path):
+    '''
+    path: need a path , create the folder for every jpg
+    '''
     for file in os.listdir(path):
         name = re.split(r'.jpg', file)
         for n in name:
