@@ -8,7 +8,7 @@ import tool.folder_operation as folder
 path = 'python\Deep Learning\Monitor\data\split\\'
  
 #处理图片
-def get_color(frame,_dir):
+def hsv_color(frame,_dir):
     print('go in get_color')
     hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
     maxsum = -100
@@ -42,7 +42,7 @@ if __name__ == '__main__':
             _dir = folder.get_folder_name(file)
             print(_dir)
 
-            print(get_color(frame,_dir))
+            print(hsv_color(frame,_dir))
 
     # img = cv2.imread(path + '604689\\' + 'red2.jpg')
     # print(img)
