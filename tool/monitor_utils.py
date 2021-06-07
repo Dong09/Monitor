@@ -7,6 +7,7 @@ import argparse
 import datetime
 import threading
 import random
+import time
 
 
 use_cuda = False
@@ -29,7 +30,7 @@ def init_camera():
 
 
 
-def cutAndCreateFolder(img, boxes, savename=None):
+def cutperson(img, boxes, savename=None):
     import cv2
     img = np.copy(img)
 
@@ -48,16 +49,18 @@ def cutAndCreateFolder(img, boxes, savename=None):
             cls_conf = box[5]
             cls_id = box[6]
 
-            if class_names[cls_id] == 'person' and cls_conf>=0.8:
-                print('========================================================',x1,x2,y1,y2)
-                target = img[y1:y2,x1:x2]
+            # if class_names[cls_id] == 'person' and cls_conf>=0.8:
+            print('========================================================',x1,x2,y1,y2)
+            target = img[y1:y2,x1:x2]
+
+            return target
                 # img = cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 1)
-                if savename is None:
-                    rand = str(int(random.random()*10000))
-                    _name = str(datetime.datetime.now().microsecond)
-                    print("save plot results to %s" %_name +'.jpg')
-                    cv2.imwrite('./data/split/'+ _name + rand +'.jpg', target)
-                    folder.create_folder('./data/split/')
+                # if savename is None:
+                #     rand = str(int(random.random()*10000))
+                #     _name = str(datetime.datetime.now().microsecond)
+                #     print("save plot results to %s" %_name +'.jpg')
+                #     cv2.imwrite('./data/split/'+ _name + rand +'.jpg', target)
+                #     folder.create_folder('./data/split/')
 
 
 
@@ -114,5 +117,49 @@ def get_args():
     return args
 
 
+
+
+def searchbydress(image, colorid=0):
+    import cv2
+    cfgfile = './cfg/yolov4.cfg'
+    weightfile = './weights\\yolov4.weights'
+
+    m = Darknet(cfgfile)
+
+    m.print_network()
+    m.load_weights(weightfile)
+    # print('Loading weights from %s... Done!' % (weightfile))
+    if use_cuda:
+        m.cuda()
+
+    # print('-------------------------',m.num_classes)
+    num_classes = m.num_classes
+    if num_classes == 20:
+        namesfile =  './data/voc.names'
+    elif num_classes == 80:
+        namesfile =  './data/coco.names'
+    else:
+        namesfile =  './data/coco.names'
+    class_names = load_class_names(namesfile)
+
+
+
+    sized = cv2.resize(image, (m.width, m.height))
+    sized = cv2.cvtColor(sized, cv2.COLOR_BGR2RGB)
+
+    for i in range(2):
+        start = time.time()
+        boxes = do_detect(m, sized, 0.4, 0.6, use_cuda)
+        finish = time.time()
+    if len(boxes[0]) != 0:
+        person = cutperson(image, boxes[0])
+        height = len(person)
+        wide = len(person[0])
+        # cv2.imshow('p',person[wide:height])
+        cv2.imshow('p',person[wide//2:height//2])
+        
+    #     return plot_boxes_cv2(image, boxes[0], class_names=class_names),boxes[0]
+    # else:
+    #     return 0,0
 
 

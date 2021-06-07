@@ -16,7 +16,10 @@ from tool.monitor_utils import *
 
 
 def _main(path=None):
-    cap = cv2.VideoCapture('./data/WIN_20210525_09_49_39_Pro.mp4')
+    '''
+    main
+    '''
+    cap = cv2.VideoCapture('./data/WIN_20210525_10_21_43_Pro.mp4')
 
     video_width = int(cap.get(3))
     video_height = int(cap.get(4))
@@ -38,13 +41,16 @@ def _main(path=None):
     timeF = 50  #视频帧计数间隔频率
     c = 0
     
-    while cap.isOpened():   #循环读取视频帧
+    #循环读取视频帧
+    while cap.isOpened():   
         
         ret,frame = cap.read()
-        # cv2.imshow('s',frame)
-        if(c%timeF == 0): #每隔timeF帧进行存储操作
+
+        #每隔timeF帧进行存储操作
+        if(c%timeF == 0): 
             # cv2.imshow('s',frame)
-            new_frame,boxes = detect_cv2(args.cfgfile, args.weightfile, frame)
+            # new_frame,boxes = detect_cv2(args.cfgfile, args.weightfile, frame)
+            searchbydress(frame)
         c = c + 1
         cv2.waitKey(5)
 
