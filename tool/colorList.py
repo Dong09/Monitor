@@ -17,13 +17,13 @@ def getColorList():
     color_list.append(upper_black)
     dict['black'] = color_list
  
-    # #灰色
-    # lower_gray = np.array([0, 0, 46])
-    # upper_gray = np.array([180, 43, 220])
-    # color_list = []
-    # color_list.append(lower_gray)
-    # color_list.append(upper_gray)
-    # dict['gray']=color_list
+    #灰色
+    lower_gray = np.array([0, 0, 46])
+    upper_gray = np.array([180, 43, 220])
+    color_list = []
+    color_list.append(lower_gray)
+    color_list.append(upper_gray)
+    dict['gray']=color_list
  
     # 白色
     lower_white = np.array([0, 0, 221])
@@ -104,9 +104,9 @@ if __name__ == '__main__':
     color_dict = getColorList()
     print(color_dict)
  
-    num = len(color_dict)
-    print('num=',num)
+    # num = len(color_dict)
+    # print('num=',num)
  
-    for d in color_dict:
-        print('key=',d)
-        print('value=',color_dict[d][1])
+    # for d in color_dict:
+    #     print('key=',d)
+    #     print('value=',color_dict[d][1])

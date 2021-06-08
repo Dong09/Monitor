@@ -19,7 +19,7 @@ def _main(path=None):
     '''
     main
     '''
-    cap = cv2.VideoCapture('./data/WIN_20210525_10_21_43_Pro.mp4')
+    cap = cv2.VideoCapture('./data/1/2021_05_25_09.mp4')
 
     video_width = int(cap.get(3))
     video_height = int(cap.get(4))
@@ -38,7 +38,8 @@ def _main(path=None):
 
     
     args = get_args()
-    timeF = 50  #视频帧计数间隔频率
+    #视频帧计数间隔频率
+    timeF = 50  
     c = 0
     
     #循环读取视频帧
@@ -48,9 +49,9 @@ def _main(path=None):
 
         #每隔timeF帧进行存储操作
         if(c%timeF == 0): 
-            # cv2.imshow('s',frame)
-            # new_frame,boxes = detect_cv2(args.cfgfile, args.weightfile, frame)
-            searchbydress(frame)
+
+            compare_color(frame,colorid=('red','gray'))
+
         c = c + 1
         cv2.waitKey(5)
 

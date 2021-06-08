@@ -8,8 +8,9 @@ import datetime
 import threading
 import random
 import time
+from recogn import *
 
-
+### ###
 use_cuda = False
 
 
@@ -120,6 +121,9 @@ def get_args():
 
 
 def searchbydress(image, colorid=0):
+    '''
+    return : result color
+    '''
     import cv2
     cfgfile = './cfg/yolov4.cfg'
     weightfile = './weights\\yolov4.weights'
@@ -143,7 +147,6 @@ def searchbydress(image, colorid=0):
     class_names = load_class_names(namesfile)
 
 
-
     sized = cv2.resize(image, (m.width, m.height))
     sized = cv2.cvtColor(sized, cv2.COLOR_BGR2RGB)
 
@@ -151,15 +154,49 @@ def searchbydress(image, colorid=0):
         start = time.time()
         boxes = do_detect(m, sized, 0.4, 0.6, use_cuda)
         finish = time.time()
+
     if len(boxes[0]) != 0:
         person = cutperson(image, boxes[0])
-        height = len(person)
-        wide = len(person[0])
-        # cv2.imshow('p',person[wide:height])
-        cv2.imshow('p',person[wide//2:height//2])
+        # print(person.shape)
+        height = person.shape[0]
+        wide = person.shape[1]
+        cloth1 = person[:height//2,:wide]
+        cloth2 = person[height//2:,:wide]
+        cv2.imshow('p',person[:height,int(1/6*wide):int(wide-1/6*wide)])
+
+        return hsv_color(cloth1),hsv_color(cloth2)
+    else:
+        return None,None
         
-    #     return plot_boxes_cv2(image, boxes[0], class_names=class_names),boxes[0]
-    # else:
-    #     return 0,0
 
 
+def compare_color(image,colorid=None):
+    cloth1,cloth2 = searchbydress(image)
+
+    # color_dict = {'black': 0, 'grey':1 ,'white': 2, 'red':3 , 'orange': 4, 'yellow': 5, 'green': 6, 'cyan': 7, 'blue': 8, 'purple': 9}
+    # color_list = ['black', 'grey' ,'white', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple']
+
+    # for key,value in color_dict.items():
+    #     if cloth1 == key:
+    #         if value == colorid[0]:
+    #             print('c1 check')
+    #     if cloth2 == key:
+    #         if value == colorid[1]:
+    #             print('c2 check')
+    print(f'({cloth1},{cloth2})')
+    if cloth1 == 'red' or cloth1 == 'red2':
+        cloth1 = 'red'
+        if (cloth1,cloth2) == colorid:
+            print('check')
+    elif (cloth1,cloth2) == colorid:
+            print('check')
+
+            
+
+
+
+
+
+
+if __name__ == '__main__':
+    compare_color(image)

@@ -8,7 +8,7 @@ import tool.folder_operation as folder
 path = 'python\Deep Learning\Monitor\data\split\\'
  
 #处理图片
-def hsv_color(frame,_dir):
+def hsv_color(frame,_dir=None):
     print('go in get_color')
     hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
     maxsum = -100
@@ -16,7 +16,7 @@ def hsv_color(frame,_dir):
     color_dict = cl.getColorList()
     for d in color_dict:
         mask = cv2.inRange(hsv,color_dict[d][0],color_dict[d][1])
-        cv2.imwrite('python\Deep Learning\Monitor\data\\split\\'+ _dir + '\\' + d +'.jpg',mask)
+        # cv2.imwrite('python\Deep Learning\Monitor\data\\split\\'+ _dir + '\\' + d +'.jpg',mask)
         binary = cv2.threshold(mask, 127, 255, cv2.THRESH_BINARY)[1]
         # binary = cv2.dilate(binary,None,iterations=2)
         cnts, hiera = cv2.findContours(binary.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
