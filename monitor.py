@@ -1,3 +1,4 @@
+from multiprocessing.context import Process
 from os import name
 import cv2
 from tool.utils import *
@@ -7,56 +8,71 @@ import tool.folder_operation as folder
 import argparse
 import numpy as np
 import datetime
-import threading
 from tool.monitor_utils import *
+from threading import Thread , Lock 
 
 
 
+def CameraCapture():
+    global IMAGE,isend,mutex
 
+    #摄像头
+    cap = cv2.VideoCapture("./data/2/2021_05_25_10.mp4")
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    print(fps)
 
+    #捕获视频
+    success, frame = cap.read()
+    index = 1
+    while success:
+        cv2.imshow("Wmain",frame)
 
-def _main(path=None):
-    '''
-    main
-    '''
-    cap = cv2.VideoCapture('./data/1/2021_05_25_09.mp4')
+        if index == fps:
+            mutex.acquire()
+            IMAGE = frame.copy()
+            mutex.release()
+            index = 1
 
-    video_width = int(cap.get(3))
-    video_height = int(cap.get(4))
-    fps = int(cap.get(5))
-    codec = int(cap.get(cv2.CAP_PROP_FOURCC))
-    
-    # ## ##
-    # def decode_fourcc(cc):
-    #     return "".join([chr((int(cc) >> 8 * i) & 0xFF) for i in range(4)])
-    # print(video_width,video_height,fps,decode_fourcc(codec))
-    # ## ##
+        index += 1
 
-    # cv2.imshow('cap',frame)
-    # print('==========================',frame)
-    ### ###
+        key =  cv2.waitKey(int(1000//fps))
+        if key == ord("q") or key == ord("Q"):
+            isend = True
+            break
 
-    
-    args = get_args()
-    #视频帧计数间隔频率
-    timeF = 50  
-    c = 0
-    
-    #循环读取视频帧
-    while cap.isOpened():   
-        
-        ret,frame = cap.read()
+        success, frame = cap.read()
 
-        #每隔timeF帧进行存储操作
-        if(c%timeF == 0): 
-
-            compare_color(frame,colorid=('red','gray'))
-
-        c = c + 1
-        cv2.waitKey(5)
-
+    #释放资源
+    cv2.destroyAllWindows()
     cap.release()
+
+
+
+
+def detectByRoll(path=None):
+    '''
+    detectByRoll
+    '''
+    global IMAGE,isend
+    print('detectByRoll  begin')
+    while not isend:
+        if IMAGE is None:
+            continue
+        print(IMAGE.shape)
+        frame = IMAGE.copy()
+        compare_color(frame,colorid=('red','gray'))
+
         
+
+def main():
+    capture = Thread(target=CameraCapture)
+    detect = Thread(target=detectByRoll)
+
+    capture.start()
+    detect.start()
+
+    capture.join()
+    detect.join()
 
 
 
@@ -78,5 +94,8 @@ def _main(path=None):
 
 
 if __name__ == '__main__':
-    _main()
+    IMAGE = None
+    mutex = Lock()
+    isend = False
+    main()
     # init_camera()
