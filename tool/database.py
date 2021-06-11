@@ -28,5 +28,9 @@ def db_operate(table,data):
 
 
 if __name__ == '__main__':
-    data = (1,'classroom','front')
-    db_operate('areainfo',data)
+    # data = (1,'classroom','front')
+    check_time = '2021-6-11'
+    cloth1 = 0
+    cloth2 = 1
+    db_operate('dresssearch', (check_time,0,0,check_time,cloth1,cloth2,'./data') )
+    # db_operate('areainfo',data)

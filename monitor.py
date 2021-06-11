@@ -5,19 +5,28 @@ from tool.utils import *
 from tool.torch_utils import *
 from tool.darknet2pytorch import Darknet
 import tool.folder_operation as folder 
+from tool.database import *
+from tool.time_operate import *
 import argparse
 import numpy as np
 import datetime
 from tool.monitor_utils import *
 from threading import Thread , Lock 
+from queue import Queue
 
 
 
-def CameraCapture():
+def CameraCapture(time,areaid):
+    '''
+    replay the video 
+
+    time: string
+    areaid: string
+    '''
     global IMAGE,isend,mutex
 
     #摄像头
-    cap = cv2.VideoCapture("./data/2/2021_05_25_10.mp4")
+    cap = cv2.VideoCapture(f'./data/{areaid}/{time}.mp4')
     fps = cap.get(cv2.CAP_PROP_FPS)
     print(fps)
 
@@ -26,11 +35,17 @@ def CameraCapture():
     index = 1
     while success:
         cv2.imshow("Wmain",frame)
+        # print(IMAGE.qsize())
 
-        if index == fps:
-            mutex.acquire()
-            IMAGE = frame.copy()
-            mutex.release()
+        if index == int(fps):
+            if IMAGE.qsize()<=10 :
+                try:
+                    # print('in->')
+                    mutex.acquire()
+                    IMAGE.put(frame.copy())
+                    mutex.release()
+                except:
+                    break
             index = 1
 
         index += 1
@@ -49,24 +64,34 @@ def CameraCapture():
 
 
 
-def detectByRoll(path=None):
+def detectByRoll(path,cloth1,cloth2):
     '''
     detectByRoll
     '''
     global IMAGE,isend
     print('detectByRoll  begin')
+    print(cloth1,cloth2)
     while not isend:
-        if IMAGE is None:
+        if IMAGE.qsize() == 0 :
             continue
-        print(IMAGE.shape)
-        frame = IMAGE.copy()
-        compare_color(frame,colorid=('red','gray'))
+        else:
+            # print(IMAGE.qsize())
+            frame = IMAGE.get()
+            # ORIGIN IMAGE IS frame
+            ischeck , check_time = compare_color(frame,colorid=(cloth1,cloth2))
+            if ischeck :
+                check_time = time_operate(check_time)
+                print((check_time,0,0,check_time,cloth1,cloth2,'./data'))
+                # searchtime areaid isreal videotime dressinfo1 dressinfo2 resultpath
+                # db_operate('dresssearch', (check_time,0,0,check_time,cloth1,cloth2,'./data') )
 
-        
+
+
+
 
 def main():
-    capture = Thread(target=CameraCapture)
-    detect = Thread(target=detectByRoll)
+    capture = Thread(target=CameraCapture,args=('2021061111','3',))
+    detect = Thread(target=detectByRoll,args=("./data/3/2021061111.mp4",'red','gray',))
 
     capture.start()
     detect.start()
@@ -76,26 +101,57 @@ def main():
 
 
 
-    # cv2.save('./data/')
 
-    # cv2.imshow('cap',new_frame)
+def replayVideo(areaid,time):
+    #摄像头
+    cap = cv2.VideoCapture(f'./data/{areaid}/{time}.mp4')
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    print(fps)
 
-    # k = cv2.waitKey(fps)
-    # if k == ord('q' or 'Q'):
-    #     break
+    #捕获视频
+    success, frame = cap.read()
+    index = 1
+    while success:
+        cv2.imshow("Wmain",frame)
+    
+        success, frame = cap.read()
 
-    # try:
-    #     th1 = threading.Thread(detect_cv2(cfgfile, weightfile, imgfile),args=('th1'))
-    #     th1 = threading.Thread(detect_cv2(cfgfile, weightfile, imgfile),args=('th1'))
-    # except:
-    #     print('error')
+    #释放资源
+    cv2.destroyAllWindows()
+    cap.release()
+
+
+
+
+
+#############################################################################################
+
+def searchinareas(areaid,time,isreal=True,use='face',image=None,colorid=(None,None),sec=5):
+    if not isreal:
+        replayVideo(areaid,time)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 if __name__ == '__main__':
-    IMAGE = None
-    mutex = Lock()
-    isend = False
-    main()
+    searchinareas('3','2021061111')
+
+    # IMAGE = Queue(maxsize=30)
+    # mutex = Lock()
+    # isend = False
+    # main()
+
     # init_camera()

@@ -9,6 +9,7 @@ import threading
 import random
 import time
 from recogn import *
+import asyncio
 
 ### ###
 use_cuda = False
@@ -164,14 +165,19 @@ def searchbydress(image, colorid=0):
         cloth2 = person[height//2:,:wide]
         cv2.imshow('p',person[:height,int(1/6*wide):int(wide-1/6*wide)])
 
-        return hsv_color(cloth1),hsv_color(cloth2),image
+        return hsv_color(cloth1),hsv_color(cloth2)
     else:
-        return None,None,None
+        return 'no','no'
         
 
 
 def compare_color(image,colorid=None):
-    cloth1,cloth2,orgin_image = searchbydress(image)
+    '''
+    image: origin image 
+    colorid: string in tuple
+    return: True or False  , time_now
+    '''
+    cloth1,cloth2 = searchbydress(image)
 
     # color_dict = {'black': 0, 'grey':1 ,'white': 2, 'red':3 , 'orange': 4, 'yellow': 5, 'green': 6, 'cyan': 7, 'blue': 8, 'purple': 9}
     # color_list = ['black', 'grey' ,'white', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple']
@@ -188,10 +194,19 @@ def compare_color(image,colorid=None):
         cloth1 = 'red'
         if (cloth1,cloth2) == colorid:
             print('check')
-            print(datetime.datetime.now())
+            time_now = datetime.datetime.now()
+            return True  , time_now
+        else:
+            time_now = datetime.datetime.now()
+            return False  , time_now
             # cv2.save('./data/')
     elif (cloth1,cloth2) == colorid:
             print('check')
+            time_now = datetime.datetime.now()
+            return True  , time_now
+    else:
+        time_now = datetime.datetime.now()
+        return False  , time_now
 
             
 
