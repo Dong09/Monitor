@@ -45,7 +45,7 @@ def detect_cv2(cfgfile, weightfile, imgfile):
 
     img = cv2.imread(imgfile)
     sized = cv2.resize(img, (m.width, m.height))
-    sized = cv2.cvtColor(sized, cv2.COLOR_BGR2RGB)
+    sized = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     for i in range(2):
         start = time.time()
@@ -143,8 +143,8 @@ def get_args():
                         default= './weights\\yolov4.weights',
                         help='--todo--', dest='weightfile')
     parser.add_argument('-imgfile', type=str,
-                        default= './data\\WIN_20210525_09_49_39_Pro.mp4',
-                        help= './data\\WIN_20210525_09_49_39_Pro.mp4', dest='imgfile')
+                        default= './data/3/2021061109.mp4',
+                        help= './data/3/2021061109.mp4', dest='imgfile')
     args = parser.parse_args()
 
     return args
