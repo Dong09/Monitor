@@ -1,26 +1,53 @@
 import os
 import re
 
-def create_folder(path):
-    '''
-    path: need a path , create the folder for every jpg
-    '''
-    for file in os.listdir(path):
-        name = re.split(r'.jpg', file)
-        n = name[0]
+# def create_folder(path):
+#     '''
+#     path: need a path , create the folder for every jpg
+#     '''
+#     for file in os.listdir(path):
+#         name = re.split(r'.jpg', file)
+#         n = name[0]
         
-        new_path = path + n + '/'
+#         new_path = path + n + '/'
 
-        isExists=os.path.exists(new_path)
-        # 判断结果
-        if not isExists:
-            # 如果不存在则创建目录
-            # 创建目录操作函数
-            os.makedirs(new_path)
-            print(new_path+' 创建成功')
-        else:
-            # 如果目录存在则不创建，并提示目录已存在
-            print(new_path+' 目录已存在')
+#         isExists=os.path.exists(new_path)
+#         # 判断结果
+#         if not isExists:
+#             # 如果不存在则创建目录
+#             # 创建目录操作函数
+#             os.makedirs(new_path)
+#             print(new_path+' 创建成功')
+#         else:
+#             # 如果目录存在则不创建，并提示目录已存在
+#             print(new_path+' 目录已存在')
+
+
+
+def create_folder(areaid,filename,time=None):
+    '''
+    areaid: areaid (string)
+    filename: name of file is usually time (string)
+    path: need a filename , create the folder for it
+    '''
+
+
+    new_path = './' + 'data/' + areaid + '/' + filename + '/'
+
+    isExists=os.path.exists(new_path)
+    # 判断结果
+    if not isExists:
+        # 如果不存在则创建目录
+        # 创建目录操作函数
+        os.makedirs(new_path)
+        print(new_path+' 创建成功')
+    else:
+        # 如果目录存在则不创建，并提示目录已存在
+        print(new_path+' 目录已存在')
+
+    return new_path
+
+
 
 
 def get_folder_name(file):

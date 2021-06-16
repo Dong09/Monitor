@@ -2,7 +2,6 @@ import cv2
 from tool.utils import *
 from tool.torch_utils import *
 from tool.darknet2pytorch import Darknet
-import tool.folder_operation as folder 
 import argparse
 import datetime
 import threading
@@ -10,6 +9,7 @@ import random
 import time
 from recogn import *
 import asyncio
+from tool.time_operate import *
 
 ### ###
 use_cuda = False
@@ -56,52 +56,8 @@ def cutperson(img, boxes, savename=None):
             target = img[y1:y2,x1:x2]
 
             return target
-                # img = cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 1)
-                # if savename is None:
-                #     rand = str(int(random.random()*10000))
-                #     _name = str(datetime.datetime.now().microsecond)
-                #     print("save plot results to %s" %_name +'.jpg')
-                #     cv2.imwrite('./data/split/'+ _name + rand +'.jpg', target)
-                #     folder.create_folder('./data/split/')
 
 
-
-# def detect_cv2(cfgfile, weightfile, imgfile):
-#     import cv2
-#     m = Darknet(cfgfile)
-
-#     m.print_network()
-#     m.load_weights(weightfile)
-#     # print('Loading weights from %s... Done!' % (weightfile))
-
-#     if use_cuda:
-#         m.cuda()
-
-#     # print('-------------------------',m.num_classes)
-#     num_classes = m.num_classes
-#     if num_classes == 20:
-#         namesfile =  './data/voc.names'
-#     elif num_classes == 80:
-#         namesfile =  './data/coco.names'
-#     else:
-#         namesfile =  './data/coco.names'
-#     class_names = load_class_names(namesfile)
-
-
-#     if len(imgfile) != 0 or imgfile is not None:
-        
-#         sized = cv2.resize(imgfile, (m.width, m.height))
-#         sized = cv2.cvtColor(sized, cv2.COLOR_BGR2RGB)
-
-#         for i in range(2):
-#             start = time.time()
-#             boxes = do_detect(m, sized, 0.4, 0.6, use_cuda)
-#             finish = time.time()
-
-#         cutAndCreateFolder(imgfile, boxes[0])
-#         return plot_boxes_cv2(imgfile, boxes[0], class_names=class_names),boxes[0]
-#     else:
-#         return 0,0
 
 
 def get_args():
@@ -117,6 +73,52 @@ def get_args():
     args = parser.parse_args()
 
     return args
+
+
+
+def rectangle_save_person(img, box,areaid,time,result_path='',start_time=''):
+    import cv2
+    img = np.copy(img)
+
+    width = img.shape[1]
+    height = img.shape[0]
+
+    x1 = int(box[0] * width) if int(box[0] * width)>=0 else 0
+    y1 = int(box[1] * height) if int(box[1] * height)>=0 else 0
+    x2 = int(box[2] * width) if int(box[2] * width)>=0 else 0
+    y2 = int(box[3] * height) if int(box[3] * height)>=0 else 0
+    class_names = load_class_names('./data/coco.names')
+    print('len///////////////////////',len(img))
+    
+    if len(box) >= 7 and class_names :
+        cls_conf = box[5]
+        cls_id = box[6]
+
+        # if class_names[cls_id] == 'person' and cls_conf>=0.8:
+        print('========================================================',x1,x2,y1,y2)
+        target = img[y1:y2,x1:x2]
+
+        img = cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
+        
+        check_time = datetime.datetime.now()
+        print(type(start_time))
+        # temp = start_time[:19]
+        # print(temp)
+
+        # start_time = datetime.datetime.strptime(temp, "%Y-%m-%d %H:%M:%S")
+        substraction_time =  check_time - start_time
+        print(str(substraction_time)[2:])
+        
+        ###
+        time_name = time[:4] + '-' + time[4:6] + '-' + time[6:8] + ' ' + time[8:10] + ':' + str(substraction_time)[2:]
+        print(time_name)
+        
+        #### TODO
+        cv2.imwrite(f'{result_path}{time_name}{areaid.zfill(2)}.jpg', img)
+
+        return check_time
+
+
 
 
 
@@ -183,7 +185,7 @@ def searchbydress(image, colorid=0):
         
 
 
-def compare_color(image,colorid=None):
+def compare_color(image,areaid,time,result_path='',colorid=('',''),start_time=''):
     '''
     image: origin image 
     colorid: string in tuple
@@ -203,29 +205,28 @@ def compare_color(image,colorid=None):
     #             print('c2 check')
 
     # print(res_cloth_list)
-    print(colorid)
+    # print(colorid)
+    # print(box)
     for i in range(len(res_cloth_list)):
         temp = res_cloth_list[i]
-        print(temp[0],temp[1])
+
         if temp[0] == 'red' or temp[0] == 'red2':
             temp[0] = 'red'
             if (temp[0],temp[1]) == colorid:
                 print('check')
-                print(box[i])
-                time_now = datetime.datetime.now()
-                return True  , time_now
+                check_time = rectangle_save_person(image, box[i], areaid, time,result_path,start_time=start_time)
+                return True  , check_time 
             else:
                 time_now = datetime.datetime.now()
-                return False  , time_now
+                return False  , time_now 
                 # cv2.save('./data/')
         elif (temp[0],temp[1]) == colorid:
                 print('check')
-                print(box[i])
-                time_now = datetime.datetime.now()
-                return True  , time_now
+                check_time = rectangle_save_person(image, box[i], areaid, time,result_path,start_time=start_time)
+                return True  , check_time
         else:
             time_now = datetime.datetime.now()
-            return False  , time_now
+            return False  , time_now 
 
             
 
@@ -235,4 +236,4 @@ def compare_color(image,colorid=None):
 
 
 if __name__ == '__main__':
-    compare_color('./data/1.png')
+    compare_color('./data/1.png','3')
