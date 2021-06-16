@@ -112,9 +112,11 @@ def rectangle_save_person(img, box,areaid,time,result_path='',start_time=''):
         ###
         time_name = time[:4] + '-' + time[4:6] + '-' + time[6:8] + ' ' + time[8:10] + ':' + str(substraction_time)[2:]
         print(time_name)
-        
+        a = datetime.datetime.strptime(time_name, "%Y-%m-%d %H:%M:%S")
+        a = time_operate_poor(a)
+
         #### TODO
-        cv2.imwrite(f'{result_path}{time_name}{areaid.zfill(2)}.jpg', img)
+        cv2.imwrite(f'{result_path}{a}{areaid.zfill(2)}.jpg', img)
 
         return check_time
 

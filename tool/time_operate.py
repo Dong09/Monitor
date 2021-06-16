@@ -20,8 +20,9 @@ def time_operate_poor(check_time):
     day = check_time.day if check_time.day>=10 else str(check_time.day).zfill(2)
     hour = check_time.hour if check_time.hour>=10 else str(check_time.hour).zfill(2)
     minute = check_time.minute if check_time.minute>=10 else str(check_time.minute).zfill(2)
+    second = check_time.second if check_time.second>=10 else str(check_time.second).zfill(2)
 
-    check_time = str(year)+ str(month) + str(day) + str(hour) + str(minute) 
+    check_time = str(year)+ str(month) + str(day) + str(hour) + str(minute) +str(second)
     return check_time
 
 
