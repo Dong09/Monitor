@@ -32,5 +32,5 @@ if __name__ == '__main__':
     check_time = '2021-6-11'
     cloth1 = 0
     cloth2 = 1
-    db_operate('dresssearch', (check_time,0,0,check_time,cloth1,cloth2,'./data') )
+    db_operate('dresssearch', ('2021-06-11 11:00:43', 3, 0, '2021-06-11', 0, 0, './data/3/20210618084429/') )
     # db_operate('areainfo',data)

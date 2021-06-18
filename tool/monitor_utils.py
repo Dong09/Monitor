@@ -60,6 +60,50 @@ def cutperson(img, boxes, savename=None):
 
 
 
+def drawface(img, boxes,areaid,time,start_time,result_path=''):
+    import cv2
+    img = np.copy(img)
+
+    width = img.shape[1]
+    height = img.shape[0]
+    for i in range(len(boxes)):
+        box = boxes
+        x1 = int(box[0])
+        y1 = int(box[1])
+        x2 = int(box[2])
+        y2 = int(box[3])
+        # class_names = load_class_names('./data/coco.names')
+        print('len///////////////////////',len(img))
+
+        # if class_names[cls_id] == 'person' and cls_conf>=0.8:
+        print('========================================================',x1,x2,y1,y2)
+        target = img[x1:x2,y2:y1]
+
+        img = cv2.rectangle(img, (y1,x1), (y2,x2), (0, 0, 255), 2)
+
+        
+        check_time = datetime.datetime.now()
+        print(type(start_time))
+
+        substraction_time =  check_time - start_time
+        print(str(substraction_time)[2:7])
+        
+        ###
+        time_name = time[:4] + '-' + time[4:6] + '-' + time[6:8] + ' ' + time[8:10] + ':' + str(substraction_time)[2:7]
+        print(time_name)
+        a = datetime.datetime.strptime(time_name, "%Y-%m-%d %H:%M:%S")
+        time_copy = a 
+        a = time_operate_poor(a)
+
+        #### TODO
+        # cv2.imwrite(f'{result_path}{a}{areaid.zfill(2)}.jpg', img)
+
+
+
+
+
+
+
 def get_args():
     parser = argparse.ArgumentParser('Test your image or video by trained model.')
     parser.add_argument('-cfgfile', type=str, default= './cfg/yolov4.cfg',
@@ -76,7 +120,7 @@ def get_args():
 
 
 
-def rectangle_save_person(img, box,areaid,time,result_path='',start_time=''):
+def rectangle_save_person(img, box,areaid,time,start_time='',result_path=''):
     import cv2
     img = np.copy(img)
 
@@ -107,20 +151,28 @@ def rectangle_save_person(img, box,areaid,time,result_path='',start_time=''):
 
         # start_time = datetime.datetime.strptime(temp, "%Y-%m-%d %H:%M:%S")
         substraction_time =  check_time - start_time
-        print(str(substraction_time)[2:])
+        print(str(substraction_time)[2:7])
         
         ###
-        time_name = time[:4] + '-' + time[4:6] + '-' + time[6:8] + ' ' + time[8:10] + ':' + str(substraction_time)[2:]
+        time_name = time[:4] + '-' + time[4:6] + '-' + time[6:8] + ' ' + time[8:10] + ':' + str(substraction_time)[2:7]
         print(time_name)
         a = datetime.datetime.strptime(time_name, "%Y-%m-%d %H:%M:%S")
+        time_copy = a 
         a = time_operate_poor(a)
 
         #### TODO
         cv2.imwrite(f'{result_path}{a}{areaid.zfill(2)}.jpg', img)
 
-        return check_time
+        return time_copy
 
 
+
+def cloth_color_convert(cloth):
+    color_list = ['black', 'gray' ,'white', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple']
+    for i in range(len(color_list)):
+        if cloth == color_list[i]:
+            return i
+    return -1
 
 
 
@@ -187,7 +239,7 @@ def searchbydress(image, colorid=0):
         
 
 
-def compare_color(image,areaid,time,result_path='',colorid=('',''),start_time=''):
+def compare_color(image,areaid,time,start_time,result_path='',colorid=('','')):
     '''
     image: origin image 
     colorid: string in tuple
@@ -195,20 +247,6 @@ def compare_color(image,areaid,time,result_path='',colorid=('',''),start_time=''
     '''
     res_cloth_list , box = searchbydress(image)
 
-    # color_dict = {'black': 0, 'grey':1 ,'white': 2, 'red':3 , 'orange': 4, 'yellow': 5, 'green': 6, 'cyan': 7, 'blue': 8, 'purple': 9}
-    # color_list = ['black', 'grey' ,'white', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple']
-
-    # for key,value in color_dict.items():
-    #     if cloth1 == key:
-    #         if value == colorid[0]:
-    #             print('c1 check')
-    #     if cloth2 == key:
-    #         if value == colorid[1]:
-    #             print('c2 check')
-
-    # print(res_cloth_list)
-    # print(colorid)
-    # print(box)
     for i in range(len(res_cloth_list)):
         temp = res_cloth_list[i]
 
@@ -216,16 +254,16 @@ def compare_color(image,areaid,time,result_path='',colorid=('',''),start_time=''
             temp[0] = 'red'
             if (temp[0],temp[1]) == colorid:
                 print('check')
-                check_time = rectangle_save_person(image, box[i], areaid, time,result_path,start_time=start_time)
-                return True  , check_time 
+                real_time = rectangle_save_person(image, box[i], areaid, time,start_time=start_time,result_path=result_path)
+                return True  , real_time 
             else:
                 time_now = datetime.datetime.now()
                 return False  , time_now 
                 # cv2.save('./data/')
         elif (temp[0],temp[1]) == colorid:
                 print('check')
-                check_time = rectangle_save_person(image, box[i], areaid, time,result_path,start_time=start_time)
-                return True  , check_time
+                real_time = rectangle_save_person(image, box[i], areaid, time,start_time=start_time,result_path=result_path)
+                return True  , real_time
         else:
             time_now = datetime.datetime.now()
             return False  , time_now 

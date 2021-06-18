@@ -15,6 +15,7 @@ from threading import Thread , Lock
 from queue import Queue
 import time as T
 import tool.folder_operation as folder 
+from tool.face_reco import *
 
 
 
@@ -81,7 +82,7 @@ def CameraCapture(areaid,time,isreal,sec):
 
 
 
-def detectByRoll(cloth1,cloth2,areaid,time,path='',start_time=''):
+def detectByRoll(cloth1,cloth2,areaid,start_time,time,path=''):
     '''
     detectByRoll
     '''
@@ -95,21 +96,85 @@ def detectByRoll(cloth1,cloth2,areaid,time,path='',start_time=''):
             # print(IMAGE.qsize())
             frame = IMAGE.get()
             # ORIGIN IMAGE IS frame
-            ischeck , check_time = compare_color(frame,areaid,time,result_path=path,colorid=(cloth1,cloth2),start_time=start_time)
+            ischeck , real_time = compare_color(frame,areaid,time,result_path=path,colorid=(cloth1,cloth2),start_time=start_time)
             if ischeck :
                 # print()
-                check_time = time_operate_db(check_time)
-                print((check_time,int(areaid),0,time,cloth1,cloth2,path))
+                real_time = time_operate_db(real_time)
+                check_time = time_operate_poor_p(time)
+                dressinfo1 = cloth_color_convert(cloth1)
+                dressinfo2 = cloth_color_convert(cloth2)
+
+                print((real_time,int(areaid),0,check_time,cloth1,cloth2,path))
                 # searchtime areaid isreal videotime dressinfo1 dressinfo2 resultpath
-                # db_operate('dresssearch', (check_time,0,0,check_time,cloth1,cloth2,'./data') )
+                db_operate('dresssearch', (str(real_time),int(areaid),0,check_time,dressinfo1,dressinfo2,path) )
+
+
+
+
+def searchbyface(image,areaid,time,start_time,result_path=''):
+    '''
+    :param image: Frame image to be retrieved(path)待检索帧图片
+    :param face: Face image to be compared(path)人脸对比图片
+    :return: Compare the frame image with the face image,if it is the same person, return to the face position人脸位置
+    '''
+    global IMAGE,isend
+    print('searchbyface  begin')
+    while not isend:
+        if IMAGE.qsize() == 0 :
+            continue
+        else:
+            # print(IMAGE.qsize())
+            frame = IMAGE.get()
+
+        # print(type(frame))
+        face = face_recognition.load_image_file(image)
+
+        image_locations = face_recognition.face_locations(frame, number_of_times_to_upsample=0, model="hog")
+        # print(image_locations)
+
+        try:
+            face_encoding = face_recognition.face_encodings(face)[0]
+            image_encoding = face_recognition.face_encodings(frame, image_locations)
+        except IndexError:
+            print("I wasn't able to locate any faces in at least one of the images. Check the image files. Aborting...")
+            quit()
+
+        known_face_encodings = [
+            face_encoding
+        ]
+        location = sub_searchbyface(image_locations, image_encoding, known_face_encodings)
+        print(location)
+
+        if location == None:
+            continue
+        else:
+            drawface(frame, location,areaid=areaid,time=time,start_time=start_time,result_path=result_path)
 
 
 
 
 
-def division_func(areaid,time,isreal,sec,search_type,colorid=('',''),result_path='',start_time=''):
+def sub_searchbyface(image_locations,image_encoding,known_face_encodings):
+    for image_location, unknown_encoding_to_check in zip(image_locations, image_encoding):
+        matches = face_recognition.compare_faces(known_face_encodings, unknown_encoding_to_check)
+        print(matches)
+        # print(face_recognition.face_distance(known_face_encodings, unknown_encoding_to_check))
+        if matches[0]:
+            print(f'>>>>>>>>>>>>>>>>>>>>>>>>>>>>{image_location}')
+            return image_location
+        else:
+            continue
+
+
+
+
+
+def division_func(areaid,time,start_time,isreal,use,sec,search_type,image,colorid=('',''),result_path=''):
     capture = Thread(target=CameraCapture,args=(areaid,time,isreal,sec,))
-    detect = Thread(target=search_type,args=(colorid[0],colorid[1],areaid,time,result_path,start_time,))
+    if use == 'face':
+        detect = Thread(target=search_type,args=(image,areaid,time,result_path,start_time,))
+    else:
+        detect = Thread(target=search_type,args=(colorid[0],colorid[1],areaid,time,result_path,start_time,))
 
     capture.start()
     detect.start()
@@ -124,11 +189,12 @@ def division_func(areaid,time,isreal,sec,search_type,colorid=('',''),result_path
 
 #############################################################################################
 
-def searchinareas(areaid,time,result_path='',start_time='',isreal=False,use='face',image=None,colorid=('',''),sec=1):
+def searchinareas(areaid,time,start_time,result_path='',isreal=False,use='face',image='',colorid=('',''),sec=1):
     if not isreal:
-        division_func(areaid, time, isreal, sec, detectByRoll, colorid,result_path,start_time)
-    else:
-        division_func(areaid, time, isreal, sec, detectByRoll, colorid,result_path,start_time)
+        if use == 'face':
+            division_func(areaid, time, start_time ,isreal, use , sec, searchbyface, image , result_path , ) 
+        else:
+            division_func(areaid, time, start_time ,isreal, use , sec, detectByRoll, colorid , result_path , )
 
 
 
@@ -156,8 +222,9 @@ if __name__ == '__main__':
     time_folder = time_operate_poor(start_time)
     result_path = folder.create_folder(areaid,time_folder)
     print(result_path)
+    image = './data/face/face.jpg'
 
-    searchinareas(areaid,'2021061111',colorid=('orange','gray'),result_path=result_path,start_time=start_time)
+    searchinareas(areaid,'2021061111',start_time=start_time,use='face',colorid=('orange','gray'),result_path=result_path,image=image)
 
     # IMAGE = Queue(maxsize=30)
     # mutex = Lock()
