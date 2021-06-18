@@ -83,7 +83,6 @@ def drawface(img, boxes,areaid,time,start_time,result_path=''):
 
         
         check_time = datetime.datetime.now()
-        start_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
         print(type(start_time))
 
         substraction_time =  check_time - start_time
