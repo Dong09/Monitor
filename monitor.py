@@ -172,7 +172,7 @@ def sub_searchbyface(image_locations,image_encoding,known_face_encodings):
 def division_func(areaid,time,start_time,isreal,use,sec,search_type,image,colorid=('',''),result_path=''):
     capture = Thread(target=CameraCapture,args=(areaid,time,isreal,sec,))
     if use == 'face':
-        detect = Thread(target=search_type,args=(image,areaid,time,result_path,start_time,))
+        detect = Thread(target=search_type,args=(image,areaid,time,start_time,result_path,))
     else:
         detect = Thread(target=search_type,args=(colorid[0],colorid[1],areaid,time,result_path,start_time,))
 
