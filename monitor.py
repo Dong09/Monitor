@@ -66,8 +66,6 @@ def CameraCapture(areaid,time,isreal,sec):
             c += 1
         # print(IMAGE.qsize())
 
-        
-
         key =  cv2.waitKey(int(1000//fps))
         if key == ord("q") or key == ord("Q"):
             isend = True
@@ -99,14 +97,14 @@ def detectByRoll(cloth1,cloth2,areaid,start_time,time,path=''):
             ischeck , real_time = compare_color(frame,areaid,time,result_path=path,colorid=(cloth1,cloth2),start_time=start_time)
             if ischeck :
                 # print()
-                real_time = time_operate_db(real_time)
-                check_time = time_operate_poor_p(time)
+                video_time = time_operate_db(real_time)
+                search_time = time_operate_db(start_time)
                 dressinfo1 = cloth_color_convert(cloth1)
                 dressinfo2 = cloth_color_convert(cloth2)
 
-                print((real_time,int(areaid),0,check_time,cloth1,cloth2,path))
+                print((search_time,int(areaid),0,video_time,cloth1,cloth2,path))
                 # searchtime areaid isreal videotime dressinfo1 dressinfo2 resultpath
-                db_operate('dresssearch', (str(real_time),int(areaid),0,check_time,dressinfo1,dressinfo2,path) )
+                db_operate('dresssearch', (str(search_time),int(areaid),0,video_time,dressinfo1,dressinfo2,path) )
 
 
 
@@ -130,7 +128,7 @@ def searchbyface(image,areaid,time,start_time,result_path=''):
         face = face_recognition.load_image_file(image)
 
         image_locations = face_recognition.face_locations(frame, number_of_times_to_upsample=0, model="hog")
-        # print(image_locations)
+        print(image_locations)
 
         try:
             face_encoding = face_recognition.face_encodings(face)[0]
@@ -148,22 +146,14 @@ def searchbyface(image,areaid,time,start_time,result_path=''):
         if location == None:
             continue
         else:
-            drawface(frame, location,areaid=areaid,time=time,start_time=start_time,result_path=result_path)
+            check_time = drawface(frame, location,areaid=areaid,time=time,start_time=start_time,result_path=result_path)
 
+            video_time = time_operate_db(check_time)
+            search_time = time_operate_db(start_time)
 
+            
+            db_operate('facesearch', (search_time,int(areaid),0,video_time,'./data/face/',result_path) )
 
-
-
-def sub_searchbyface(image_locations,image_encoding,known_face_encodings):
-    for image_location, unknown_encoding_to_check in zip(image_locations, image_encoding):
-        matches = face_recognition.compare_faces(known_face_encodings, unknown_encoding_to_check)
-        print(matches)
-        # print(face_recognition.face_distance(known_face_encodings, unknown_encoding_to_check))
-        if matches[0]:
-            print(f'>>>>>>>>>>>>>>>>>>>>>>>>>>>>{image_location}')
-            return image_location
-        else:
-            continue
 
 
 
@@ -181,8 +171,6 @@ def division_func(areaid,time,start_time,isreal,use,sec,search_type,image,colori
 
     capture.join()
     detect.join()
-
-
 
 
 
@@ -216,15 +204,20 @@ if __name__ == '__main__':
     IMAGE = Queue(maxsize=30)
     mutex = Lock()
     isend = False
+
     areaid = '3'
+    time = '2021061111'
+    image = './data/face/face.jpg'
+    use = 'face'
+    colorid = ('orange','gray')
 
     start_time = datetime.datetime.now()
     time_folder = time_operate_poor(start_time)
     result_path = folder.create_folder(areaid,time_folder)
-    print(result_path)
-    image = './data/face/face.jpg'
 
-    searchinareas(areaid,'2021061111',start_time=start_time,use='face',colorid=('orange','gray'),result_path=result_path,image=image)
+    print(result_path)
+
+    searchinareas(areaid,time=time,start_time=start_time,use=use,colorid=colorid,result_path=result_path,image=image)
 
     # IMAGE = Queue(maxsize=30)
     # mutex = Lock()

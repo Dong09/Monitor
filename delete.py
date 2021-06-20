@@ -2,8 +2,9 @@ import cv2
 from tool.monitor_utils import *
 import datetime
 import re
-import face_recognition
-from PIL import Image, ImageDraw
+import face_recognition 
+from tool.time_operate import *
+from tool.database import *
 
 
 # cap = cv2.VideoCapture(f'./data/3/2021061111.mp4')
@@ -49,6 +50,8 @@ from PIL import Image, ImageDraw
 
 
 
+
+
 def drawface(img, boxes,areaid,time,result_path='',start_time=''):
     import cv2
     img = np.copy(img)
@@ -70,8 +73,8 @@ def drawface(img, boxes,areaid,time,result_path='',start_time=''):
 
         img = cv2.rectangle(img, (y1,x1), (y2,x2), (0, 0, 255), 2)
         
-        cv2.imshow('sdf',img)
-        cv2.waitKey(0)
+        # cv2.imshow('sdf',img)
+        # cv2.waitKey(0)
         
         check_time = datetime.datetime.now()
         print(type(start_time))
@@ -85,7 +88,12 @@ def drawface(img, boxes,areaid,time,result_path='',start_time=''):
         a = datetime.datetime.strptime(time_name, "%Y-%m-%d %H:%M:%S")
         time_copy = a 
         a = time_operate_poor(a)
+        
+        # print(f'{result_path}{a}{areaid.zfill(2)}.jpg')
+        img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
+        cv2.imwrite(f'{result_path}{a}{areaid.zfill(2)}.jpg', img)
 
+        return time_copy
 
 
 
@@ -99,13 +107,12 @@ def searchbyface(image,areaid,time,result_path='',start_time=''):
     global IMAGE,isend
     print('searchbyface  begin')
     
-
     # print(type(frame))
     frame = face_recognition.load_image_file('./data/face/frame.jpg')
     face = face_recognition.load_image_file('./data/face/face.jpg')
 
     image_locations = face_recognition.face_locations(frame, number_of_times_to_upsample=0, model="hog")
-    # print(image_locations)
+    print(image_locations)
 
     try:
         face_encoding = face_recognition.face_encodings(face)[0]
@@ -123,8 +130,13 @@ def searchbyface(image,areaid,time,result_path='',start_time=''):
     if location == None:
         pass
     else:
-        drawface(frame, location,areaid=areaid,time=time,result_path=result_path,start_time=start_time)
+        check_time = drawface(frame, location,areaid=areaid,time=time,start_time=start_time,result_path=result_path)
+        # print(check_time.year)
 
+        video_time = time_operate_db(check_time)
+        search_time = time_operate_db(start_time)
+
+        db_operate('facesearch', (search_time,int(areaid),0,video_time,'./data/face/',result_path) )
 
 
 
@@ -142,12 +154,19 @@ def sub_searchbyface(image_locations,image_encoding,known_face_encodings):
 
 
 
-
-
-
-
 start_time = datetime.datetime.now()
 time_folder = time_operate_poor(start_time)
 result_path = folder.create_folder('3',time_folder)
 
 searchbyface('./data/face/face.jpg','3','2021061811',result_path=result_path,start_time=start_time)
+
+
+
+
+
+
+
+
+# a = []
+
+# print(a[0])

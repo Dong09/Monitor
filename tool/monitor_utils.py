@@ -32,32 +32,6 @@ def init_camera():
 
 
 
-def cutperson(img, boxes, savename=None):
-    import cv2
-    img = np.copy(img)
-
-    width = img.shape[1]
-    height = img.shape[0]
-    for i in range(len(boxes)):
-        box = boxes
-        x1 = int(box[0] * width) if int(box[0] * width)>=0 else 0
-        y1 = int(box[1] * height) if int(box[1] * height)>=0 else 0
-        x2 = int(box[2] * width) if int(box[2] * width)>=0 else 0
-        y2 = int(box[3] * height) if int(box[3] * height)>=0 else 0
-        class_names = load_class_names('./data/coco.names')
-        print('len///////////////////////',len(img))
-        
-        if len(box) >= 7 and class_names :
-            cls_conf = box[5]
-            cls_id = box[6]
-
-            # if class_names[cls_id] == 'person' and cls_conf>=0.8:
-            print('========================================================',x1,x2,y1,y2)
-            target = img[y1:y2,x1:x2]
-
-            return target
-
-
 
 
 def drawface(img, boxes,areaid,time,start_time,result_path=''):
@@ -83,10 +57,10 @@ def drawface(img, boxes,areaid,time,start_time,result_path=''):
 
         
         check_time = datetime.datetime.now()
-        print(type(start_time))
+        # print(type(start_time))
 
         substraction_time =  check_time - start_time
-        print(str(substraction_time)[2:7])
+        # print(str(substraction_time)[2:7])
         
         ###
         time_name = time[:4] + '-' + time[4:6] + '-' + time[6:8] + ' ' + time[8:10] + ':' + str(substraction_time)[2:7]
@@ -96,10 +70,24 @@ def drawface(img, boxes,areaid,time,start_time,result_path=''):
         a = time_operate_poor(a)
 
         #### TODO
-        # cv2.imwrite(f'{result_path}{a}{areaid.zfill(2)}.jpg', img)
+        img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
+        cv2.imwrite(f'{result_path}{a}{areaid.zfill(2)}.jpg', img)
+
+        return time_copy
 
 
 
+
+def sub_searchbyface(image_locations,image_encoding,known_face_encodings):
+    for image_location, unknown_encoding_to_check in zip(image_locations, image_encoding):
+        matches = face_recognition.compare_faces(known_face_encodings, unknown_encoding_to_check)
+        print(matches)
+        # print(face_recognition.face_distance(known_face_encodings, unknown_encoding_to_check))
+        if matches[0]:
+            print(f'>>>>>>>>>>>>>>>>>>>>>>>>>>>>{image_location}')
+            return image_location
+        else:
+            continue
 
 
 
@@ -117,6 +105,51 @@ def get_args():
     args = parser.parse_args()
 
     return args
+
+
+
+
+
+
+########################################################################################
+########################################################################################
+########################################################################################
+########################################################################################
+##################################   searchbydress    ##################################
+########################################################################################
+########################################################################################
+########################################################################################
+########################################################################################
+
+
+
+
+
+def cutperson(img, boxes, savename=None):
+    import cv2
+    img = np.copy(img)
+
+    width = img.shape[1]
+    height = img.shape[0]
+    for i in range(len(boxes)):
+        box = boxes
+        x1 = int(box[0] * width) if int(box[0] * width)>=0 else 0
+        y1 = int(box[1] * height) if int(box[1] * height)>=0 else 0
+        x2 = int(box[2] * width) if int(box[2] * width)>=0 else 0
+        y2 = int(box[3] * height) if int(box[3] * height)>=0 else 0
+        class_names = load_class_names('./data/coco.names')
+        print('len///////////////////////',len(img))
+        
+        if len(box) >= 7 and class_names :
+            cls_conf = box[5]
+            cls_id = box[6]
+
+            # if class_names[cls_id] == 'person' and cls_conf>=0.8:
+            print('========================================================',x1,x2,y1,y2)
+            target = img[y1:y2,x1:x2]
+
+            return target
+
 
 
 
@@ -177,7 +210,7 @@ def cloth_color_convert(cloth):
 
 
 
-def searchbydress(image, colorid=0):
+def searchbydress(image):
     '''
     return : tuple in the list 
     For exmple: [('red','blue'),('green','pink'),]
